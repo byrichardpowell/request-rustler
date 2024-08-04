@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wasm App</title>
+  </head>
+  <body>
+    <script type="module">
+      import init, {
+        greet,
+        validate_admin_request,
+      } from "./pkg/request_rustler.js";
+
+      async function runWasm() {
+        // Initialize the WASM module
+        await init();
+
+        // Arguments
+        const request = {
+          method: "OPTIONS",
+          headers: {},
+          url: "http://www.google.com",
+        };
+        const origins = {
+          app: "http://www.my-app.com/app",
+          patch_session_token: "http://www.my-app.com/app/patch",
+          login: "http://www.my-app.com/app/login",
+          exit_iframe: "http://www.my-app.com/app/exit",
+        };
+        const keys = {
+          public: "456def",
+          private: "123abc",
+        };
+
+        // Call validate_admin_request and log the result
+        const result = validate_admin_request(request, origins, keys);
+        console.log(result);
+      }
+
+      runWasm();
+    </script>
+  </body>
+</html>

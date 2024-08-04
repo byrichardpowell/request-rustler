@@ -1,0 +1,12 @@
+{
+  "name": "request-rustler",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "watch": "cargo watch -s 'wasm-pack build --target web'",
+    "serve": "npx serve ."
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
