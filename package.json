@@ -1,13 +1,23 @@
 {
   "name": "request-rustler",
-  "version": "1.0.0",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "watch": "cargo watch -s 'wasm-pack build --target web'",
-    "serve": "npx serve .",
-    "lint:rust": "cargo clippy"
+    "rust:build": "wasm-pack build --target nodejs",
+    "rust:dev": "cargo watch -s 'wasm-pack build --target nodejs'",
+    "rust:lint": "cargo clippy",
+    "node:dev": "nodemon --watch ./node/server.mjs  --exec node ./node/server.mjs"
   },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "ts-node-dev": "^2.0.0"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "he": "^1.2.0",
+    "node-fetch": "^3.3.2",
+    "source-map-support": "^0.5.21"
+  }
 }
