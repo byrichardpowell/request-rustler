@@ -313,8 +313,8 @@ pub fn validate_admin_request(
         });
     }
 
-    let key: Hmac<Sha256> = Hmac::new_from_slice(&keys.private.as_bytes()).unwrap();
+    let key: Hmac<Sha256> = Hmac::new_from_slice(keys.private.as_bytes()).unwrap();
     let claims: JwtPayload = id_token.verify_with_key(&key).unwrap();
 
-    return Ok(claims);
+    Ok(claims)
 }

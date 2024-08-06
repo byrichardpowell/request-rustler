@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "watch": "cargo watch -s 'wasm-pack build --target web'",
-    "serve": "npx serve ."
+    "serve": "npx serve .",
+    "lint:rust": "cargo clippy"
   },
   "author": "",
   "license": "ISC",
