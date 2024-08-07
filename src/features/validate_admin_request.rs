@@ -16,17 +16,18 @@ pub struct Request {
 }
 
 #[derive(Deserialize)]
+pub struct Config {
+    public_key: String,
+    private_key: String,
+    origins: Origins,
+}
+
+#[derive(Deserialize)]
 pub struct Origins {
     app: String,
     patch_session_token: String,
     login: String,
     exit_iframe: String,
-}
-
-#[derive(Deserialize)]
-pub struct Keys {
-    public: String,
-    private: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -52,10 +53,10 @@ pub struct JwtPayload {
 
 pub fn validate_admin_request(
     request: &Request,
-    origins: &Origins,
-    keys: &Keys,
+    config: &Config,
 ) -> Result<JwtPayload, ResponseObject> {
     let request_url = Url::parse(&request.url).unwrap();
+    let origins = &config.origins;
     let app_origin = Url::parse(&origins.app).unwrap();
     let patch_session_token_origin = Url::parse(&origins.patch_session_token).unwrap();
     let login_origin = Url::parse(&origins.login).unwrap();
@@ -106,7 +107,7 @@ pub fn validate_admin_request(
             status: 200,
             body: format!(
                 r#"<script data-api-key="{}" src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>"#,
-                keys.public
+                config.public_key
             ),
             headers: [
                 ("content-type".to_string(), "text/html".to_string()),
@@ -141,7 +142,7 @@ pub fn validate_admin_request(
             status: 200,
             body: format!(
                 r#"<script data-api-key="{}" src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script><script>window.open("{}", "_top")</script>"#,
-                keys.public, origins.exit_iframe
+                config.public_key, origins.exit_iframe
             ),
             headers: [
                 ("content-type".to_string(), "text/html".to_string()),
@@ -253,7 +254,7 @@ pub fn validate_admin_request(
                 body: "".to_string(),
                 headers: [(
                     "Location".to_string(),
-                    format!("https://{}/apps/{}", decoded_host, keys.public),
+                    format!("https://{}/apps/{}", decoded_host, config.public_key),
                 )]
                 .iter()
                 .cloned()
@@ -313,7 +314,7 @@ pub fn validate_admin_request(
         });
     }
 
-    let key: Hmac<Sha256> = Hmac::new_from_slice(keys.private.as_bytes()).unwrap();
+    let key: Hmac<Sha256> = Hmac::new_from_slice(config.private_key.as_bytes()).unwrap();
     let claims: JwtPayload = id_token.verify_with_key(&key).unwrap();
 
     Ok(claims)

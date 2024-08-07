@@ -10,12 +10,10 @@ pub fn greet(name: &str) -> String {
 }
 
 #[wasm_bindgen]
-pub fn validate_admin_request(request: JsValue, origins: JsValue, keys: JsValue) -> JsValue {
+pub fn validate_admin_request(request: JsValue, config: JsValue) -> JsValue {
     let request = from_value(request).expect("Failed to deserialize request");
-    let origins = from_value(origins).expect("Failed to deserialize origins");
-    let keys = from_value(keys).expect("Failed to deserialize keys");
-
-    let result = admin_request(&request, &origins, &keys);
+    let config = from_value(config).expect("Failed to deserialize config");
+    let result = admin_request(&request, &config);
 
     // Convert the result back to JsValue
     match result {
