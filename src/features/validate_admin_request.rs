@@ -38,7 +38,13 @@ pub struct ResponseObject {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct JwtPayload {
+pub struct JwtResult {
+    id_token: String,
+    payload: JwtPayload,
+}
+
+#[derive(Serialize, Deserialize)]
+struct JwtPayload {
     iss: String,  // Issuer
     dest: String, // Destination
     aud: String,  // Audience
@@ -57,7 +63,7 @@ pub fn validate_admin_request(
     request: &Request,
     config: &Config,
     _log: LogFn,
-) -> Result<JwtPayload, ResponseObject> {
+) -> Result<JwtResult, ResponseObject> {
     let request_url = Url::parse(&request.url).unwrap();
     let urls = &config.urls;
     let app_url = Url::parse(&urls.app).unwrap();
@@ -325,5 +331,8 @@ pub fn validate_admin_request(
     let key: Hmac<Sha256> = Hmac::new_from_slice(config.private_key.as_bytes()).unwrap();
     let claims: JwtPayload = id_token.verify_with_key(&key).unwrap();
 
-    Ok(claims)
+    Ok(JwtResult {
+        id_token,
+        payload: claims,
+    })
 }
