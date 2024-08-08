@@ -51,9 +51,12 @@ pub struct JwtPayload {
     sig: String,  // Signature
 }
 
+pub type LogFn = fn(&str);
+
 pub fn validate_admin_request(
     request: &Request,
     config: &Config,
+    _log: LogFn,
 ) -> Result<JwtPayload, ResponseObject> {
     let request_url = Url::parse(&request.url).unwrap();
     let origins = &config.origins;
@@ -97,12 +100,15 @@ pub fn validate_admin_request(
         }
     }
 
-    if request_url.origin() == patch_session_token_origin.origin() {
+    if request_url.origin() == patch_session_token_origin.origin()
+        && request_url.path() == patch_session_token_origin.path()
+    {
         let shop = request_url
             .query_pairs()
             .find(|(key, _)| key == "shop")
             .map(|(_, value)| value.to_string())
             .unwrap_or_default();
+
         return Err(ResponseObject {
             status: 200,
             body: format!(
@@ -129,7 +135,9 @@ pub fn validate_admin_request(
         });
     }
 
-    if request_url.origin() == exit_iframe_origin.origin() {
+    if request_url.origin() == exit_iframe_origin.origin()
+        && request_url.path() == exit_iframe_origin.path()
+    {
         let exit_iframe = request_url
             .query_pairs()
             .find(|(key, _)| key == "exitIFrame")
