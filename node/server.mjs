@@ -7,28 +7,33 @@ const app = express();
 app.use(express.json());
 
 app.use((req, res, next) => {
-  const origin = req.protocol + "://" + req.get("host");
-  const url = origin + req.originalUrl;
-  const result = validate_admin_request(
-    {
-      url,
-      method: req.method,
-      headers: req.headers,
+  const origin = process.env.HOST;
+  const request = {
+    url: origin + req.originalUrl,
+    method: req.method,
+    headers: req.headers,
+  };
+  const options = {
+    public_key: process.env.SHOPIFY_API_KEY,
+    private_key: process.env.SHOPIFY_API_SECRET,
+    origins: {
+      app: `${origin}`,
+      patch_session_token: `${origin}/patch`,
+      login: `${origin}/login`,
+      exit_iframe: `${origin}/exit`,
     },
-    {
-      public_key: "123abc",
-      private_key: "456def",
-      origins: {
-        app: `${origin}/app`,
-        patch_session_token: `${origin}/app/patch`,
-        login: `${origin}/app/login`,
-        exit_iframe: `${origin}/app/exit`,
-      },
-    }
-  );
+  };
+
+  const result = validate_admin_request(request, options);
 
   if (result.status) {
     const content = `
+      <h2>Request</h2>
+      <dl>
+        <dt>request:</dt><dd><pre>${JSON.stringify(request, null, 2)}</pre></dd>
+        <dt>options:</dt><dd><pre>${JSON.stringify(options, null, 2)}</pre></dd>
+      </dl>
+      <h2>Response</h2>
       <dl>
         <dt>status:</dt><dd>${result.status}</dd>
         <dt>body:</dt><dd>${he.encode(result.body)}</dd>
@@ -39,12 +44,13 @@ app.use((req, res, next) => {
     `;
 
     res.send(content);
+  } else {
+    res.send(JSON.stringify(result));
   }
 
   next();
 });
 
-const PORT = 3000;
-app.listen(PORT, async () => {
-  console.log(`Server is listening on port ${PORT}`);
+app.listen(process.env.PORT, async () => {
+  console.log(`Server is listening on port ${process.env.PORT}`);
 });

@@ -5,7 +5,12 @@
     "rust:build": "wasm-pack build --target nodejs",
     "rust:dev": "cargo watch -s 'wasm-pack build --target nodejs'",
     "rust:lint": "cargo clippy",
-    "node:dev": "nodemon --watch ./node/server.mjs  --exec node ./node/server.mjs"
+    "dev": "shopify app dev",
+    "config:link": "shopify app config link",
+    "generate": "shopify app generate",
+    "deploy": "shopify app deploy",
+    "config:use": "shopify app config use",
+    "env": "shopify app env"
   },
   "author": "",
   "license": "ISC",
@@ -19,5 +24,8 @@
     "he": "^1.2.0",
     "node-fetch": "^3.3.2",
     "source-map-support": "^0.5.21"
-  }
+  },
+  "trustedDependencies": [
+    "@shopify/plugin-cloudflare"
+  ]
 }

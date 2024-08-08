@@ -1,0 +1,6 @@
+name = "Express"
+roles = ["frontend", "backend"]
+webhooks_path = "/webhooks"
+
+[commands]
+dev = "nodemon --watch ./node/server.mjs  --exec node ./node/server.mjs"
