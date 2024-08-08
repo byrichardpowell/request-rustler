@@ -19,11 +19,11 @@ pub struct Request {
 pub struct Config {
     public_key: String,
     private_key: String,
-    origins: Origins,
+    urls: Urls,
 }
 
 #[derive(Deserialize)]
-pub struct Origins {
+pub struct Urls {
     app: String,
     patch_session_token: String,
     login: String,
@@ -59,16 +59,16 @@ pub fn validate_admin_request(
     _log: LogFn,
 ) -> Result<JwtPayload, ResponseObject> {
     let request_url = Url::parse(&request.url).unwrap();
-    let origins = &config.origins;
-    let app_origin = Url::parse(&origins.app).unwrap();
-    let patch_session_token_origin = Url::parse(&origins.patch_session_token).unwrap();
-    let login_origin = Url::parse(&origins.login).unwrap();
-    let exit_iframe_origin = Url::parse(&origins.exit_iframe).unwrap();
+    let urls = &config.urls;
+    let app_url = Url::parse(&urls.app).unwrap();
+    let patch_session_token_url = Url::parse(&urls.patch_session_token).unwrap();
+    let login_url = Url::parse(&urls.login).unwrap();
+    let exit_iframe_url = Url::parse(&urls.exit_iframe).unwrap();
 
     if request.method == "OPTIONS" {
         let default_origin = "".to_string();
         let origin = request.headers.get("Origin").unwrap_or(&default_origin);
-        if origin == app_origin.as_str() {
+        if origin == app_url.as_str() {
             return Err(ResponseObject {
                 status: 204,
                 body: "".to_string(),
@@ -100,8 +100,8 @@ pub fn validate_admin_request(
         }
     }
 
-    if request_url.origin() == patch_session_token_origin.origin()
-        && request_url.path() == patch_session_token_origin.path()
+    if request_url.origin() == patch_session_token_url.origin()
+        && request_url.path() == patch_session_token_url.path()
     {
         let shop = request_url
             .query_pairs()
@@ -135,8 +135,8 @@ pub fn validate_admin_request(
         });
     }
 
-    if request_url.origin() == exit_iframe_origin.origin()
-        && request_url.path() == exit_iframe_origin.path()
+    if request_url.origin() == exit_iframe_url.origin()
+        && request_url.path() == exit_iframe_url.path()
     {
         let exit_iframe = request_url
             .query_pairs()
@@ -144,13 +144,13 @@ pub fn validate_admin_request(
             .map(|(_, value)| value.to_string())
             .unwrap_or_default();
         let exit_iframe_url = Url::parse(&exit_iframe)
-            .or_else(|_| app_origin.join(&exit_iframe))
+            .or_else(|_| app_url.join(&exit_iframe))
             .unwrap();
         return Err(ResponseObject {
             status: 200,
             body: format!(
                 r#"<script data-api-key="{}" src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script><script>window.open("{}", "_top")</script>"#,
-                config.public_key, origins.exit_iframe
+                config.public_key, urls.exit_iframe
             ),
             headers: [
                 ("content-type".to_string(), "text/html".to_string()),
@@ -182,7 +182,7 @@ pub fn validate_admin_request(
             return Err(ResponseObject {
                 status: 302,
                 body: "".to_string(),
-                headers: [("Location".to_string(), login_origin.to_string())]
+                headers: [("Location".to_string(), login_url.to_string())]
                     .iter()
                     .cloned()
                     .collect(),
@@ -205,7 +205,7 @@ pub fn validate_admin_request(
             return Err(ResponseObject {
                 status: 302,
                 body: "".to_string(),
-                headers: [("Location".to_string(), login_origin.to_string())]
+                headers: [("Location".to_string(), login_url.to_string())]
                     .iter()
                     .cloned()
                     .collect(),
@@ -221,7 +221,7 @@ pub fn validate_admin_request(
             return Err(ResponseObject {
                 status: 302,
                 body: "".to_string(),
-                headers: [("Location".to_string(), login_origin.to_string())]
+                headers: [("Location".to_string(), login_url.to_string())]
                     .iter()
                     .cloned()
                     .collect(),
@@ -244,7 +244,7 @@ pub fn validate_admin_request(
             return Err(ResponseObject {
                 status: 302,
                 body: "".to_string(),
-                headers: [("Location".to_string(), login_origin.to_string())]
+                headers: [("Location".to_string(), login_url.to_string())]
                     .iter()
                     .cloned()
                     .collect(),
@@ -284,7 +284,7 @@ pub fn validate_admin_request(
                 .map(|(key, value)| format!("{}={}", key, value))
                 .collect::<Vec<String>>()
                 .join("&");
-            let redirect_url = format!("{}{}?{}", app_origin, request_url.path(), search_params);
+            let redirect_url = format!("{}{}?{}", app_url, request_url.path(), search_params);
             return Err(ResponseObject {
                 status: 302,
                 body: "".to_string(),
@@ -292,7 +292,7 @@ pub fn validate_admin_request(
                     "Location".to_string(),
                     format!(
                         "{}?{}&shopify-reload={}",
-                        patch_session_token_origin, search_params, redirect_url
+                        patch_session_token_url, search_params, redirect_url
                     ),
                 )]
                 .iter()

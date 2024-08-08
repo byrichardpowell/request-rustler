@@ -16,7 +16,7 @@ app.use((req, res, next) => {
   const options = {
     public_key: process.env.SHOPIFY_API_KEY,
     private_key: process.env.SHOPIFY_API_SECRET,
-    origins: {
+    urls: {
       app: `${origin}`,
       patch_session_token: `${origin}/patch`,
       login: `${origin}/login`,
