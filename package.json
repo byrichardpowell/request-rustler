@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "express": "^4.19.2",
-    "he": "^1.2.0",
     "node-fetch": "^3.3.2",
     "source-map-support": "^0.5.21"
   },

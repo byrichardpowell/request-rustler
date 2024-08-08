@@ -1,50 +1,38 @@
 import express from "express";
 import { validate_admin_request } from "../pkg/request_rustler.js";
-import he from "he";
 
 const app = express();
 
 app.use(express.json());
 
 app.use((req, res, next) => {
-  const origin = process.env.HOST;
-  const request = {
-    url: origin + req.originalUrl,
-    method: req.method,
-    headers: req.headers,
-  };
-  const options = {
-    public_key: process.env.SHOPIFY_API_KEY,
-    private_key: process.env.SHOPIFY_API_SECRET,
-    urls: {
-      app: `${origin}`,
-      patch_session_token: `${origin}/patch`,
-      login: `${origin}/login`,
-      exit_iframe: `${origin}/exit`,
+  const result = validate_admin_request(
+    {
+      url: process.env.HOST + req.originalUrl,
+      method: req.method,
+      headers: req.headers,
     },
-  };
-
-  const result = validate_admin_request(request, options);
+    {
+      public_key: process.env.SHOPIFY_API_KEY,
+      private_key: process.env.SHOPIFY_API_SECRET,
+      urls: {
+        app: `${process.env.HOST}`,
+        patch_session_token: `${process.env.HOST}/patch`,
+        login: `${process.env.HOST}/login`,
+        exit_iframe: `${process.env.HOST}/exit`,
+      },
+    }
+  );
 
   if (result.status) {
-    const content = `
-      <h2>Request</h2>
-      <dl>
-        <dt>request:</dt><dd><pre>${JSON.stringify(request, null, 2)}</pre></dd>
-        <dt>options:</dt><dd><pre>${JSON.stringify(options, null, 2)}</pre></dd>
-      </dl>
-      <h2>Response</h2>
-      <dl>
-        <dt>status:</dt><dd>${result.status}</dd>
-        <dt>body:</dt><dd>${he.encode(result.body)}</dd>
-        <dt>headers:<dt><dd><pre>${he.encode(
-          JSON.stringify(Object.fromEntries(result.headers), null, 2)
-        )}</pre>
-      </dl>
-    `;
-
-    res.send(content);
+    // Request was not OK
+    // Send Response suggested by validate_admin_request()
+    const { status, body, headers } = result;
+    res.status(status).set(headers).send(body);
   } else {
+    // Request was OK
+    // Send the id_token and payload returned from validate_admin_request()
+    // Here a real app might do token exchange or fetch data etc instead
     res.send(JSON.stringify(result));
   }
 
