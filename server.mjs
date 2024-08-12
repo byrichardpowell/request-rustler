@@ -1,5 +1,5 @@
 import express from "express";
-import { validate_admin_request } from "../pkg/request_rustler.js";
+import { validate_admin_request } from "./pkg/request_rustler.js";
 
 const app = express();
 
